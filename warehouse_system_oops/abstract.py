@@ -1,31 +1,33 @@
 from typing import TypedDict, operator
 from queue  import PriorityQueue
 
-counter = 0
+# counter = 0 # we will not be using global counter, instead we'll use rack_counter
 
 class Warehouse():
     def __init__(self, racks, capacity):
-        self.racks: any = {rack: PriorityQueue() for rack in racks}
-        self.capacity: int
+        self.racks = {rack: PriorityQueue() for rack in racks}
+        self.capacity = capacity
+        self.rack_count = {rack: 0 for rack in racks}
     
+    def is_rack_empty(self, rack_name: str):
+        return self.rack_count[rack_name] < self.capacity
+      
     def add_item(self, rack_name:str, item: dict):
-        global counter 
-        counter += 1
-        self.racks[rack_name].put((item["priority"], counter, item))
+        if(self.is_rack_empty(rack_name)):
+            self.rack_count[rack_name] += 1
+            self.racks[rack_name].put((item["priority"], item))
+            return "Item successfully added"
+        return "No space left on rack!"
 
+    
     def retrieve_item(self, rack_name: str):
-        if self.racks[rack_name].empty():
-            return f"Rack with {rack_name} does not exist!"
-        _, _, item = self.racks[rack_name].get()
-        return item
+        try:
+            if self.racks[rack_name].empty():
+                return f"Rack with {rack_name} does not exist!"
+            item = self.racks[rack_name].get()
+            return item
+        except KeyError as e:
+            print(f"Error: Key {e} not found in the Rack list")
+            
     
-    def is_rack_empty(self):
-        if (~self.capacity):
-            return True
-        return False
-    
-    def is_rack_full(self):
-        if(self.capacity):
-            return False
-        return True
  
